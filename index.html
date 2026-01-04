@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#3498db">
+    <meta name="description" content="AI-powered study planning with Pomodoro timer, analytics, gamification, and intelligent recommendations">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/logo.svg">
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+    <title>Smart Study Planner</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Music Player Widget -->
+    <div id="musicPlayer" class="music-player">
+        <div class="music-player-header">
+            <h3>🎵 Focus Music</h3>
+            <button class="music-close" onclick="planner.toggleMusicPlayer()">−</button>
+        </div>
+        <div class="music-player-content">
+            <div class="music-playlist">
+                <button class="music-preset" onclick="planner.playPlaylist('lofi', 'Lo-Fi Hip Hop', 'https://www.youtube.com/embed/jfKfPfyJRdk')">
+                    🌙 Lo-Fi Hip Hop
+                </button>
+                <button class="music-preset" onclick="planner.playPlaylist('classical', 'Classical Focus', 'https://www.youtube.com/embed/siQul0uWx10')">
+                    🎻 Classical Focus
+                </button>
+                <button class="music-preset" onclick="planner.playPlaylist('ambient', 'Ambient Sounds', 'https://www.youtube.com/embed/U9mwLBFd6_s')">
+                    🌊 Ambient Sounds
+                </button>
+                <button class="music-preset" onclick="planner.playPlaylist('piano', 'Piano Study', 'https://www.youtube.com/embed/Xgx9wJ9Xe64')">
+                    🎹 Piano Study
+                </button>
+            </div>
+            <div id="musicControls" class="music-controls hidden">
+                <div class="now-playing" id="nowPlaying">Now Playing: --</div>
+                <div class="music-buttons">
+                    <button class="music-btn" id="musicPlayBtn" onclick="planner.toggleMusicPlayback()">▶</button>
+                    <button class="music-btn" onclick="planner.stopMusic()">⏹</button>
+                </div>
+                <div class="volume-control">
+                    <span>🔊</span>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="50" onchange="planner.setMusicVolume(this.value)">
+                </div>
+            </div>
+        </div>
+        <audio id="musicAudio"></audio>
+    </div>
+
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">📚 Smart Study Planner</div>
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="planner.toggleMode('dashboard')">Dashboard</button>
+                <button class="nav-btn" onclick="planner.toggleMode('focus')">Focus Mode</button>
+                <button class="nav-btn" onclick="planner.showStats()">Analytics</button>
+                <button class="nav-btn" onclick="planner.showAchievements()">🏆 Achievements</button>
+                <button class="nav-btn" id="chatToggle" onclick="planner.toggleChat()">💬 Chat</button>
+                <button class="nav-btn" id="gptShortcut" onclick="planner.openChatGPT()">GPT</button>
+                <button class="nav-btn" id="themeToggle" onclick="planner.toggleTheme()">🌙 Dark</button>
+                <button class="nav-btn" onclick="planner.showExportImport()">⚙️</button>
+            </div>
+        </nav>
+
+        <!-- Focus Mode -->
+        <div id="focusMode" class="focus-mode hidden">
+            <div class="focus-container">
+                <div class="focus-timer" id="focusTimer">25:00</div>
+                <div class="focus-task" id="focusTask">Select a subject to begin</div>
+                <div class="focus-controls">
+                    <button class="btn btn-primary" id="focusStart">Start</button>
+                    <button class="btn btn-secondary" id="focusPause">Pause</button>
+                    <button class="btn btn-danger" id="focusExit">Exit Focus Mode</button>
+                </div>
+                <div class="focus-motivational" id="focusMotivation"></div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div id="mainDashboard">
+            <header class="header">
+                <div class="header-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <div>
+                            <h1>📚 Smart Study Planner</h1>
+                            <p class="subtitle">Plan your studies intelligently</p>
+                        </div>
+                        <div class="user-stats">
+                            <div class="stat-badge">
+                                <span class="stat-label">Streak</span>
+                                <span class="stat-value" id="streakDisplay">0</span>🔥
+                            </div>
+                            <div class="stat-badge">
+                                <span class="stat-label">Level</span>
+                                <span class="stat-value" id="levelDisplay">1</span>⭐
+                            </div>
+                            <div class="stat-badge">
+                                <span class="stat-label">XP</span>
+                                <span class="stat-value" id="xpDisplay">0</span>💎
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+        <!-- Smart Recommendations Panel -->
+        <div class="recommendation-panel panel">
+            <h2>🤖 Today's Smart Recommendation</h2>
+            <div id="smartRecommendation" class="recommendation-content">
+                <p class="empty-state">Add subjects and subject difficulty to get personalized recommendations</p>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Left Panel: Input Section -->
+            <div class="panel input-panel">
+                <h2>Add Subject</h2>
+                <form id="subjectForm" class="form">
+                    <div class="form-group">
+                        <label for="subjectName">Subject Name *</label>
+                        <input type="text" id="subjectName" placeholder="e.g., Mathematics, Physics" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="chapters">Chapters/Topics *</label>
+                        <input type="number" id="chapters" placeholder="Number of chapters" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="difficulty">Difficulty Level *</label>
+                        <select id="difficulty" required>
+                            <option value="">Select difficulty</option>
+                            <option value="easy">😊 Easy</option>
+                            <option value="medium">😐 Medium</option>
+                            <option value="hard">🤔 Hard</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="examDate">Exam/Deadline *</label>
+                        <input type="date" id="examDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="priority">Priority Level *</label>
+                        <select id="priority" required>
+                            <option value="">Select priority</option>
+                            <option value="high">🔴 High</option>
+                            <option value="medium">🟡 Medium</option>
+                            <option value="low">🟢 Low</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Add Subject</button>
+                </form>
+            </div>
+
+            <!-- Middle Panel: Subjects List -->
+            <div class="panel subjects-panel">
+                <h2>My Subjects</h2>
+                <div id="subjectsList" class="subjects-list">
+                    <p class="empty-state">No subjects yet. Add one to get started!</p>
+                </div>
+            </div>
+
+            <!-- Right Panel: Daily Study Plan & Pomodoro -->
+            <div class="panel plan-panel">
+                <h2>📅 Suggested Daily Plan</h2>
+                <div class="plan-controls">
+                    <button class="btn btn-primary btn-small" onclick="planner.startPomodoro()">⏱️ Start Pomodoro</button>
+                </div>
+                <div id="studyPlan" class="study-plan">
+                    <p class="empty-state">Add subjects to generate your study plan</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Burnout Detection Alert -->
+        <div id="burnoutAlert" class="burnout-alert hidden">
+            <div class="alert-content">
+                <strong>⚠️ Burnout Alert!</strong>
+                <p id="burnoutMessage"></p>
+                <button class="btn btn-secondary" onclick="document.getElementById('burnoutAlert').classList.add('hidden')">Dismiss</button>
+            </div>
+        </div>
+
+        <!-- Pomodoro Timer Modal -->
+        <div id="pomodoroModal" class="modal hidden">
+            <div class="modal-content">
+                <button class="modal-close" onclick="planner.closePomodoro()">&times;</button>
+                <h2>⏱️ Pomodoro Timer</h2>
+                <div id="pomodoroDisplay" class="pomodoro-display">25:00</div>
+                <div id="pomodoroInfo" class="pomodoro-info">
+                    <p>Subject: <strong id="pomodoroSubject">-</strong></p>
+                    <p>Duration: <strong id="pomodoroDuration">25 min</strong></p>
+                </div>
+                <div class="pomodoro-controls">
+                    <button class="btn btn-primary" id="pomodoroPlayBtn" onclick="planner.pomodoroControl('play')">▶ Start</button>
+                    <button class="btn btn-secondary" id="pomodoroPauseBtn" onclick="planner.pomodoroControl('pause')" disabled>⏸ Pause</button>
+                    <button class="btn btn-danger" onclick="planner.pomodoroControl('reset')">🔄 Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Modal -->
+        <div id="statsModal" class="modal hidden">
+            <div class="modal-content modal-large">
+                <button class="modal-close" onclick="document.getElementById('statsModal').classList.add('hidden')">&times;</button>
+                <h2>📊 Study Analytics</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>📅 Study Heatmap</h3>
+                        <div id="heatmap" class="heatmap"></div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>📈 Weekly Report</h3>
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievements Modal -->
+        <div id="achievementsModal" class="modal hidden">
+            <div class="modal-content modal-large">
+                <button class="modal-close" onclick="document.getElementById('achievementsModal').classList.add('hidden')">&times;</button>
+                <h2>🏆 Achievements & Progress</h2>
+                <div id="achievementsContainer" class="achievements-container">
+                    <!-- Populated by showAchievements() -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Reflection Modal -->
+        <div id="reflectionModal" class="modal hidden">
+            <div class="modal-content">
+                <button class="modal-close" onclick="document.getElementById('reflectionModal').classList.add('hidden')">&times;</button>
+                <h2>📝 Why didn't you study this subject?</h2>
+                <p id="reflectionSubject" style="font-weight: bold; color: var(--primary-color); margin-bottom: 20px;"></p>
+                <div id="reflectionOptions" class="reflection-options">
+                    <!-- Populated by showReflection() -->
+                </div>
+                <button class="btn btn-secondary" style="margin-top: 20px;" onclick="document.getElementById('reflectionModal').classList.add('hidden')">Skip</button>
+            </div>
+        </div>
+
+        <!-- Export/Import Modal -->
+        <div id="exportModal" class="modal hidden">
+            <div class="modal-content">
+                <button class="modal-close" onclick="document.getElementById('exportModal').classList.add('hidden')">&times;</button>
+                <h2>⚙️ Settings & Backup</h2>
+                <div class="export-controls">
+                    <div style="margin-bottom: 15px;">
+                        <label>📚 Study Mode:</label>
+                        <select id="modeSelect" onchange="planner.setMode(this.value)" style="margin-left: 10px; padding: 8px;">
+                            <option value="normal">Normal Mode</option>
+                            <option value="exam">Exam Mode</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="planner.exportData()">📥 Export Data (JSON)</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 Import Data</button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="planner.importData(event)">
+                    <button class="btn btn-danger" onclick="planner.clearAllData()">🗑️ Clear All Data</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Modal -->
+        <div id="chatModal" class="modal hidden">
+            <div class="modal-content modal-large">
+                <button class="modal-close" onclick="planner.toggleChat()">&times;</button>
+                <h2>🤖 Study Assistant</h2>
+                <div id="chatWindow" class="chat-window">
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <div class="chat-input-row">
+                        <input id="chatInput" type="text" placeholder="Ask me about study plans, Pomodoro, or type 'open gpt'...">
+                        <button id="chatSendBtn" class="btn btn-primary">Send</button>
+                        <button class="btn btn-secondary" onclick="planner.openChatGPT()">Open ChatGPT</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Feature Buttons -->
+        <div class="feature-buttons">
+            <button class="btn btn-primary" onclick="planner.loadFailureAnalytics()" title="View skipped subjects and best study times">
+                📊 Failure Analytics
+            </button>
+            <button class="btn btn-primary" onclick="planner.generateWeeklyPlan()" title="Generate optimized weekly study schedule">
+                📅 Generate Weekly Plan
+            </button>
+            <button class="btn btn-primary" onclick="document.getElementById('moodModal').style.display='block'" title="Track your study mood and energy">
+                😊 Mood Tracker
+            </button>
+        </div>
+
+        <!-- Mood Tracker Modal -->
+        <div id="moodModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="document.getElementById('moodModal').style.display='none'">&times;</span>
+                <h2>😊 How are you feeling?</h2>
+                <p>Your mood helps optimize your study sessions</p>
+                <div class="mood-selector">
+                    <button class="mood-btn tired" onclick="planner.recordMood('tired', 25, 3)" title="Tired - Need a break">
+                        😴 Tired
+                    </button>
+                    <button class="mood-btn normal" onclick="planner.recordMood('normal', 25, 3)" title="Normal - Ready to study">
+                        😐 Normal
+                    </button>
+                    <button class="mood-btn energetic" onclick="planner.recordMood('energetic', 25, 5)" title="Energetic - Let's go!">
+                        ⚡ Energetic
+                    </button>
+                </div>
+                <div class="effectiveness-selector">
+                    <label>How effective was this session? (1-5)</label>
+                    <div class="effectiveness-buttons">
+                        <button class="eff-btn" onclick="planner.recordMood('normal', 25, 1)">😞 1</button>
+                        <button class="eff-btn" onclick="planner.recordMood('normal', 25, 2)">😕 2</button>
+                        <button class="eff-btn" onclick="planner.recordMood('normal', 25, 3)">😐 3</button>
+                        <button class="eff-btn" onclick="planner.recordMood('normal', 25, 4)">😊 4</button>
+                        <button class="eff-btn" onclick="planner.recordMood('normal', 25, 5)">🤩 5</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Failure Analytics Modal -->
+        <div id="failureAnalyticsModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="document.getElementById('failureAnalyticsModal').style.display='none'">&times;</span>
+                <div id="failureAnalyticsContent">Loading analytics...</div>
+            </div>
+        </div>
+
+        <!-- Weekly Plan Modal -->
+        <div id="weeklyPlanModal" class="modal">
+            <div class="modal-content wide-modal">
+                <span class="close" onclick="document.getElementById('weeklyPlanModal').style.display='none'">&times;</span>
+                <div id="weeklyPlanContent">Generating your weekly plan...</div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-container">
+                <h2>📊 Progress Overview</h2>
+                <canvas id="progressChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h2>🎯 Priority Distribution</h2>
+                <canvas id="priorityChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h2>⏰ Study Time Allocation</h2>
+                <canvas id="timeChart"></canvas>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script src="api-client.js"></script>
