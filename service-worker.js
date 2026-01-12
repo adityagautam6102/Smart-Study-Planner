@@ -47,6 +47,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Always fetch HTML files fresh from network (no cache)
+  if (event.request.url.includes('.html')) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
+
+  // For other assets (CSS, JS, etc), use cache-first strategy
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
