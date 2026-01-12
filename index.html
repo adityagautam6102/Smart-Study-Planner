@@ -12,12 +12,12 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Check if user is authenticated - if not, redirect to landing page
-        (function() {
-            if (!localStorage.getItem('smartStudyUser')) {
-                window.location.href = 'landing.html';
-            }
-        })();
+        // CRITICAL: Check authentication IMMEDIATELY before anything else loads
+        if (!localStorage.getItem('smartStudyUser')) {
+            // No user found, redirect to landing page immediately
+            window.location.replace('landing.html');
+            document.write('Redirecting to landing page...');
+        }
     </script>
 </head>
 <body>
