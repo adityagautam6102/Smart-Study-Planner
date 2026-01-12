@@ -1,4 +1,7 @@
 // Smart Study Planner - Enhanced with AI Recommendations, Pomodoro, Analytics & Gamification
+const USE_BACKEND_API = false;
+// When true, enable frontend-only demo behaviours (prevents redirects, eases GH Pages demo)
+const DEMO_MODE = true;
 
 class SmartStudyPlanner {
     constructor() {
@@ -28,9 +31,22 @@ class SmartStudyPlanner {
             volume: 50
         };
         // Require login: if no current user, redirect to login page
+        // When running from GitHub Pages, file://, or localhost for demo, allow a guest user
         if (!localStorage.getItem('smartStudyUser')) {
-            window.location.href = 'login.html';
-            return;
+            try {
+                const host = (location && location.hostname) ? location.hostname : '';
+                const protocol = (location && location.protocol) ? location.protocol : '';
+                const isDemoHost = host.includes('github.io') || host === 'localhost' || protocol === 'file:';
+                if (isDemoHost) {
+                    localStorage.setItem('smartStudyUser', JSON.stringify({ email: 'guest', name: 'Guest' }));
+                } else {
+                    window.location.href = 'login.html';
+                    return;
+                }
+            } catch (e) {
+                window.location.href = 'login.html';
+                return;
+            }
         }
 
         this.init();
@@ -68,6 +84,17 @@ class SmartStudyPlanner {
             chatInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') this.sendChatMessage();
             });
+        }
+    }
+
+    // ============= LOGOUT SYSTEM =============
+    logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('smartStudyUser');
+            localStorage.removeItem('smartStudyPlannerData');
+            localStorage.removeItem('smartStudyGamification');
+            localStorage.removeItem('smartStudyTheme');
+            window.location.href = 'landing.html';
         }
     }
 
@@ -1398,18 +1425,29 @@ class SmartStudyPlanner {
 
     // ============= WEEKLY AUTO-PLANNER =============
     async generateWeeklyPlan() {
+        // Prevent running on empty data (common on fresh GitHub Pages demos)
+        if (!this.subjects || this.subjects.length === 0) {
+            alert('Please add subjects first to generate a weekly plan.');
+            const modal = document.getElementById('weeklyPlanModal');
+            if (modal) modal.style.display = 'none';
+            return null;
+        }
+
         try {
             const result = await api.generateWeeklyPlan();
             console.log('Weekly Plan Generated:', result);
-            
+
             this.weeklyPlan = result.plan;
             this.renderWeeklyPlan();
-            document.getElementById('weeklyPlanModal').style.display = 'block';
-            
+            const modal = document.getElementById('weeklyPlanModal');
+            if (modal) modal.style.display = 'block';
+
             return result;
         } catch (error) {
             console.error('Failed to generate weekly plan:', error);
             alert('Failed to generate weekly plan. Please try again.');
+            const modal = document.getElementById('weeklyPlanModal');
+            if (modal) modal.style.display = 'none';
         }
     }
 
@@ -1497,3 +1535,23 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
+
+// Failsafe: ensure any blocking modals/overlays are hidden on load (prevents GH Pages demo freeze)
+window.addEventListener('load', () => {
+    try {
+        document.querySelectorAll('.loading, .modal, .overlay').forEach(el => {
+            // Only hide modals that are empty or look like loaders
+            if (el.classList.contains('modal') || el.classList.contains('overlay') || el.classList.contains('loading')) {
+                el.style.display = el.querySelector && el.querySelector('.modal-content') ? el.style.display : 'none';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+
+        // Specifically ensure weeklyPlanModal isn't left open on empty data
+        const weekly = document.getElementById('weeklyPlanModal');
+        if (weekly) weekly.style.display = 'none';
+    } catch (e) {
+        // ignore
+    }
+});

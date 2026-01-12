@@ -11,6 +11,23 @@
     <title>Smart Study Planner</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Redirect to landing page if not authenticated
+        (function() {
+            try {
+                const host = (location && location.hostname) ? location.hostname : '';
+                const protocol = (location && location.protocol) ? location.protocol : '';
+                const isDemoHost = host.includes('github.io') || host === 'localhost' || protocol === 'file:';
+                
+                // If demo host, let guest access; otherwise require login
+                if (!isDemoHost && !localStorage.getItem('smartStudyUser')) {
+                    window.location.href = 'landing.html';
+                }
+            } catch (e) {
+                // If any error, just continue
+            }
+        })();
+    </script>
 </head>
 <body>
     <!-- Music Player Widget -->
@@ -62,6 +79,7 @@
                 <button class="nav-btn" id="gptShortcut" onclick="planner.openChatGPT()">GPT</button>
                 <button class="nav-btn" id="themeToggle" onclick="planner.toggleTheme()">🌙 Dark</button>
                 <button class="nav-btn" onclick="planner.showExportImport()">⚙️</button>
+                <button class="nav-btn" onclick="planner.logout()" style="background-color: #ef4444;">🚪 Logout</button>
             </div>
         </nav>
 
@@ -364,3 +382,4 @@
     </div>
 
     <script src="api-client.js"></script>
+    <script src="script.js"></script>
