@@ -31,22 +31,9 @@ class SmartStudyPlanner {
             volume: 50
         };
         // Require login: if no current user, redirect to login page
-        // When running from GitHub Pages, file://, or localhost for demo, allow a guest user
         if (!localStorage.getItem('smartStudyUser')) {
-            try {
-                const host = (location && location.hostname) ? location.hostname : '';
-                const protocol = (location && location.protocol) ? location.protocol : '';
-                const isDemoHost = host.includes('github.io') || host === 'localhost' || protocol === 'file:';
-                if (isDemoHost) {
-                    localStorage.setItem('smartStudyUser', JSON.stringify({ email: 'guest', name: 'Guest' }));
-                } else {
-                    window.location.href = 'login.html';
-                    return;
-                }
-            } catch (e) {
-                window.location.href = 'login.html';
-                return;
-            }
+            window.location.href = 'landing.html';
+            return;
         }
 
         this.init();

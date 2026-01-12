@@ -12,19 +12,10 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Redirect to landing page if not authenticated
+        // Check if user is authenticated - if not, redirect to landing page
         (function() {
-            try {
-                const host = (location && location.hostname) ? location.hostname : '';
-                const protocol = (location && location.protocol) ? location.protocol : '';
-                const isDemoHost = host.includes('github.io') || host === 'localhost' || protocol === 'file:';
-                
-                // If demo host, let guest access; otherwise require login
-                if (!isDemoHost && !localStorage.getItem('smartStudyUser')) {
-                    window.location.href = 'landing.html';
-                }
-            } catch (e) {
-                // If any error, just continue
+            if (!localStorage.getItem('smartStudyUser')) {
+                window.location.href = 'landing.html';
             }
         })();
     </script>
