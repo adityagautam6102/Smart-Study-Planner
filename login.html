@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login — Smart Study Planner</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card">
+      <img src="assets/logo.svg" alt="logo" class="auth-logo">
+      <h2>Welcome Back</h2>
+      <p class="muted">Login to your Smart Study Planner account</p>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" type="email" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" type="password" required>
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary" type="submit">Login</button>
+        </div>
+      </form>
+
+      <hr>
+
+      <h3 id="register">Create Account</h3>
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="rname">Name</label>
+          <input id="rname" type="text" required>
+        </div>
+        <div class="form-group">
+          <label for="remail">Email</label>
+          <input id="remail" type="email" required>
+        </div>
+        <div class="form-group">
+          <label for="rpassword">Password</label>
+          <input id="rpassword" type="password" required>
+        </div>
+        <div class="form-group">
+          <button class="btn btn-secondary" type="submit">Register</button>
+        </div>
+      </form>
+
+      <p class="auth-note">By logging in you agree to local demo storage. This is a demo app.</p>
+    </div>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>
