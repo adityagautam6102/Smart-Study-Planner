@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Study Planner - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #0A0F15; }
+        .split-layout {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .hero-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 5rem 6rem;
+            color: white;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        
+        .logo-icon {
+            width: 45px; height: 45px; position: relative; display: block;
+        }
+        .logo-sq1 { position: absolute; width:28px; height:28px; background:#A7F3D0; border-radius:6px; top:0; left:0; }
+        .logo-sq2 { position: absolute; width:28px; height:28px; background:#FBCFE8; border-radius:6px; top:8px; left:8px; opacity:0.9; }
+        .logo-sq3 { position: absolute; width:28px; height:28px; background:#60A5FA; border-radius:6px; top:16px; left:16px; opacity:0.9; }
+        
+        .logo-text {
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #FFFFFF, #6EE7B7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .subtitle-text {
+            font-size: 1.4rem;
+            font-style: italic;
+            color: #9CA3AF;
+            margin-bottom: 4rem;
+            font-weight: 300;
+        }
+        .subtitle-highlight { color: #6EE7B7; font-weight: 600; }
+
+        .quote-container {
+            position: relative;
+            display: flex;
+            gap: 1rem;
+            margin-bottom: auto;
+        }
+        
+        .quote-mark {
+            font-size: 4rem;
+            color: rgba(110, 231, 183, 0.4);
+            line-height: 0.8;
+            font-family: serif;
+        }
+        
+        .quote-content {
+            font-size: 1.75rem;
+            font-weight: 300;
+            line-height: 1.5;
+            max-width: 550px;
+            color: #E5E7EB;
+             transition: opacity 0.5s ease;
+        }
+
+        .quote-author {
+            display: block;
+            margin-top: 1.5rem;
+            font-size: 1.125rem;
+            color: #6EE7B7;
+            font-style: italic;
+        }
+        
+        .footer-text {
+            font-size: 0.875rem;
+            color: #6B7280;
+            margin-top: 4rem;
+        }
+
+        .auth-container-wrapper {
+            width: 550px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            padding-right: 4rem;
+        }
+
+        .auth-section {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-left: 2px solid rgba(110, 231, 183, 0.8);
+            box-shadow: -20px 0 60px rgba(16, 185, 129, 0.15), 0 20px 40px rgba(0,0,0,0.4);
+            border-radius: 20px;
+            padding: 3rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .auth-nav {
+            position: absolute;
+            top: 2.5rem;
+            right: 2.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-nav {
+            padding: 0.6rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-nav-active { background: #6EE7B7; color: #064E3B; }
+        .btn-nav-inactive { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-nav-inactive:hover { background: rgba(255,255,255,0.1); }
+
+        .auth-title {
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: white;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.875rem;
+            color: #E5E7EB;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #6EE7B7;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #A7F3D0, #34D399);
+            color: #064E3B;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(52, 211, 153, 0.4);
+        }
+
+        .forgot-pass {
+            text-align: center;
+            color: #9CA3AF;
+            font-size: 0.875rem;
+            margin-top: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .forgot-pass:hover { color: white; }
+
+        /* Canvas glow overlap */
+        .glow-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(0,0,0,0) 70%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Animated Dotted Wave Background -->
+    <canvas id="bg-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0;"></canvas>
+    <div class="glow-overlay"></div>
+
+    <div class="split-layout">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <div class="logo-sq1"></div>
+                    <div class="logo-sq2"></div>
+                    <div class="logo-sq3"></div>
+                </div>
+                <div class="logo-text">SmartPlanner</div>
+            </div>
+            
+            <div class="subtitle-text">
+                Plan smarter. <span class="subtitle-highlight">Learn faster.</span> Achieve more.
+            </div>
+
+            <div class="quote-container">
+                <div class="quote-mark">“</div>
+                <div>
+                     <div class="quote-content" id="quote-display">
+                        Education is the most powerful weapon which you can use to change the world.
+                     </div>
+                     <div class="quote-author" id="quote-author">— Nelson Mandela</div>
+                </div>
+            </div>
+            
+            <div class="footer-text">
+                Trusted by students worldwide.
+            </div>
+        </div>
+
+        <!-- Auth Section -->
+        <div class="auth-container-wrapper">
+            <div class="auth-section">
+                <!-- Inner Nav -->
+                <div class="auth-nav">
+                    <button type="button" class="btn-nav btn-nav-active" id="btn-nav-signin">Sign In</button>
+                    <button type="button" class="btn-nav btn-nav-inactive" id="btn-nav-signup">Sign Up</button>
+                </div>
+
+                <h2 class="auth-title" id="form-title">Welcome Back</h2>
+                
+                <form id="auth-form">
+                    <div class="input-group" id="name-group" style="display: none;">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" placeholder="John Doe">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="you@example.com" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="••••••••" required>
+                    </div>
+                    
+                    <div id="error-message" style="color: #EF4444; font-size: 0.875rem; margin-top: 1rem; display: none;"></div>
+                    
+                    <button type="submit" class="btn-submit" id="submit-btn">Sign In</button>
+                </form>
+                
+                <div class="forgot-pass" id="forgot-pass">Forgot password?</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-client.js"></script>
+    <script src="login.js"></script>
+</body>
+</html>
