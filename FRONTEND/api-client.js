@@ -1,6 +1,6 @@
 class ApiClient {
     constructor() {
-        this.baseUrl = 'http://localhost:5000/api';
+        this.baseUrl = 'https://smart-study-planner-backend-znh9.onrender.com/api';
     }
 
     getToken() {
