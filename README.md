@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Smart Study Planner
 
 A production-ready, AI-enhanced study planning application with gamification, analytics, PWA support, and a robust Python/Flask backend.
@@ -11,3 +12,6 @@ A production-ready, AI-enhanced study planning application with gamification, an
 - Deep Analytics
 
 See `SETUP.md` for running instructions.
+=======
+# Smart-Study-Planner
+>>>>>>> b04d807e17111caa8ea8cd7e39704670e61c65e9
