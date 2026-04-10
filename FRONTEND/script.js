@@ -3,24 +3,39 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const state = { subjects: [], gamification: null, timer: null, timeLeft: 25*60, isRunning: false };
 
-    // -- 1. Nav Pills Logic --
-    const pills = document.querySelectorAll('.nav-pill[data-target]');
+    // -- 1. Universal Navigation Logic --
+    // Syncs both Top Nav (Desktop) and Bottom Nav (Mobile)
+    const navItems = document.querySelectorAll('.nav-pill[data-target], .nav-item[data-target]');
     const views = document.querySelectorAll('.view-section');
-    pills.forEach(pill => {
-        pill.addEventListener('click', () => {
-            pills.forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-            views.forEach(v => v.classList.remove('active-view'));
-            
-            const target = pill.getAttribute('data-target');
-            document.getElementById(`view-${target}`).classList.add('active-view');
-            
-            if(target === 'analytics') renderChart();
+
+    function switchView(target) {
+        navItems.forEach(item => {
+            if (item.getAttribute('data-target') === target) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+        
+        views.forEach(v => v.classList.remove('active-view'));
+        const targetView = document.getElementById(`view-${target}`);
+        if (targetView) targetView.classList.add('active-view');
+        
+        if(target === 'analytics') renderChart();
+        
+        // Scroll to top when switching views on mobile
+        window.scrollTo(0, 0);
+    }
+
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const target = item.getAttribute('data-target');
+            if (target) switchView(target);
         });
     });
 
     document.getElementById('btn-dashboard-pomo').addEventListener('click', () => {
-        document.querySelector('.nav-pill[data-target="focus"]').click();
+        switchView('focus');
     });
 
     // Theme logic
@@ -29,7 +44,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(h.getAttribute('data-theme') === 'light') { h.setAttribute('data-theme', 'dark'); }
         else { h.setAttribute('data-theme', 'light'); }
     });
-    document.getElementById('btn-logout').addEventListener('click', () => { window.api.clearToken(); window.location.href='login.html'; });
+
+    // Logout handling
+    const handleLogout = () => { if(confirm('Are you sure you want to logout?')) { window.api.clearToken(); window.location.href='login.html'; } };
+    document.getElementById('btn-logout').addEventListener('click', handleLogout);
+    document.getElementById('btn-logout-mobile').addEventListener('click', handleLogout);
 
     // -- 2. Data Loading --
     async function loadData() {
@@ -73,13 +92,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         let htmlStr = '', planHtml = '';
         state.subjects.forEach(s => {
             const pct = s.chapters > 0 ? Math.round((s.completed_chapters / s.chapters)*100) : 0;
-            htmlStr += `<div style="border-bottom:1px solid var(--border-color); padding:0.75rem 0;">
-                <div style="display:flex; justify-content:space-between; font-weight:600; color:var(--text-main);">${s.name} <span style="font-weight:400; color:var(--primary);">${pct}%</span></div>
-                <div style="font-size:0.75rem; color:var(--text-muted);">Prio: ${s.priority} | Diff: ${s.difficulty}</div>
-                <div style="width:100%; height:4px; background:var(--surface-alt); border-radius:2px; margin-top:4px;"><div style="width:${pct}%; height:100%; background:var(--primary); border-radius:2px;"></div></div>
+            htmlStr += `<div style="border-bottom:1px solid var(--border-color); padding:1rem 0;">
+                <div style="display:flex; justify-content:space-between; font-weight:600; color:var(--text-main); font-size:1.1rem; margin-bottom:0.4rem;">${s.name} <span style="font-weight:700; color:var(--primary);">${pct}%</span></div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">Prio: ${s.priority} | Diff: ${s.difficulty}</div>
+                <div style="width:100%; height:6px; background:var(--surface-alt); border-radius:3px; overflow:hidden;"><div style="width:${pct}%; height:100%; background:var(--primary); border-radius:3px; transition: width 0.5s ease;"></div></div>
             </div>`;
             if (s.priority === 'high' || (pct < 100 && s.priority === 'medium')) {
-                 planHtml += `<div style="padding:0.5rem; background:rgba(0,0,0,0.3); border-radius:6px; margin-bottom:0.5rem; border:1px solid var(--border-color);"><strong>${s.name}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">Suggested: 2 Pomodoros</span></div>`;
+                 planHtml += `<div style="padding:0.75rem; background:rgba(0,0,0,0.3); border-radius:10px; margin-bottom:0.75rem; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                    <div><strong>${s.name}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">Suggested: 2 Pomodoros</span></div>
+                    <span>🔥</span>
+                 </div>`;
             }
         });
         list.innerHTML = htmlStr; planList.innerHTML = planHtml || "All caught up!";
@@ -89,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const c = document.getElementById('main-rec-content');
         if(!state.subjects.length) return;
         let b = state.subjects.sort((x,y) => (x.priority==='high'?1:0) > (y.priority==='high'?1:0) ? -1 : 1)[0];
-        c.innerHTML = `<span style="font-size:1.5rem; color:var(--primary); font-weight:700;">${b.name}</span><br><span style="font-size:0.875rem;">Your top priority algorithm pick!</span>`;
+        c.innerHTML = `Study <span style="font-size:1.5rem; color:var(--primary); font-weight:800;">${b.name}</span><br><span style="font-size:0.9rem; opacity:0.8;">Your top priority algorithm pick!</span>`;
     }
 
     function populateBottomRowCards() {
@@ -127,14 +149,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const inp = document.getElementById('chat-input');
         const t = inp.value.trim(); if(!t) return;
         
-        cHist.innerHTML += `<div style="background:var(--primary); color:#000; padding:0.8rem; border-radius:8px; align-self:flex-end; max-width:80%; margin-left:auto;">${t}</div>`;
+        cHist.innerHTML += `<div style="background:var(--primary); color:#000; padding:0.8rem; border-radius:12px; align-self:flex-end; max-width:85%; margin-left:auto;">${t}</div>`;
         inp.value = '';
         setTimeout(() => {
-           let r = "I'm a simple AI placeholder. Click focus timer to study!";
-           if(t.toLowerCase().includes('recommend')) r = "Check the dashboard for your top pick!";
-           if(t.toLowerCase().includes('plan')) r = "Click 'Generate Weekly Plan' on dashboard.";
-           if(t.toLowerCase().includes('timer')) { document.querySelector('.nav-pill[data-target="focus"]').click(); return;}
-           cHist.innerHTML += `<div style="background:var(--surface-alt); padding:0.8rem; border-radius:8px; max-width:80%;">${r}</div>`;
+           let r = "I'm your AI Study Assistant. I can help you manage your focus sessions and recommend subjects based on your progress.";
+           if(t.toLowerCase().includes('recommend')) r = "I've analyzed your progress. Check the dashboard for your top priority pick!";
+           if(t.toLowerCase().includes('plan')) r = "Click 'Generate Weekly Plan' on the dashboard to see your full schedule.";
+           if(t.toLowerCase().includes('timer')) { switchView('focus'); return;}
+           cHist.innerHTML += `<div style="background:var(--surface-alt); padding:1rem; border-radius:12px; max-width:85%; line-height:1.4;">${r}</div>`;
            cHist.scrollTop = cHist.scrollHeight;
         }, 500);
     });
@@ -144,22 +166,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function renderChart() {
         if(!state.gamification) return;
         const ctx = document.getElementById('progressChart');
+        if(!ctx) return;
         if(chartInstance) chartInstance.destroy();
         chartInstance = new Chart(ctx, {
             type: 'bar',
-            data: { labels: ['Level', 'XP', 'Studied (m)'], datasets: [{ label:'Metrics', data:[state.gamification.level, state.gamification.xp, state.gamification.total_minutes_studied], backgroundColor: '#10B981', borderRadius: 4}] },
-            options: { responsive:true, maintainAspectRatio: false, scales: { y: { beginAtZero:true } } }
+            data: { 
+                labels: ['Level', 'XP', 'Minutes'], 
+                datasets: [{ 
+                    label:'My Progress', 
+                    data:[state.gamification.level, state.gamification.xp, state.gamification.total_minutes_studied], 
+                    backgroundColor: '#10B981', 
+                    borderRadius: 8,
+                    borderSkipped: false
+                }] 
+            },
+            options: { 
+                responsive:true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero:true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#A7F3D0' } },
+                    x: { grid: { display: false }, ticks: { color: '#A7F3D0' } }
+                } 
+            }
         });
     }
 
-    // -- 6. Music Widget (Youtube Player) --
+    // -- 6. Music Widget --
     document.getElementById('min-music').addEventListener('click', (e) => {
         const l = document.getElementById('music-list');
         l.classList.toggle('hidden');
         e.target.textContent = l.classList.contains('hidden') ? '□' : '_';
     });
 
-    // We expose global callback for youtube api
     let player;
     window.onYouTubeIframeAPIReady = function() {
         player = new YT.Player('yt-player', { height: '0', width: '0', videoId: '', playerVars: { 'autoplay': 1, 'controls': 0 } });
@@ -178,59 +217,54 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // -- 7. Animated Dotted Waves Background (Canvas) --
-    // We recreate a 3D-like undulating grid of dots directly on canvas
     const canvas = document.getElementById('bg-canvas');
     if (canvas) {
         const ctx = canvas.getContext('2d');
         let width, height;
 
         function resizeCanvas() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
+            // Fix for high-DPI screens
+            const dpr = window.devicePixelRatio || 1;
+            width = canvas.width = window.innerWidth * dpr;
+            height = canvas.height = window.innerHeight * dpr;
+            ctx.scale(dpr, dpr);
+            canvas.style.width = window.innerWidth + 'px';
+            canvas.style.height = window.innerHeight + 'px';
         }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
         let waveTime = 0;
         function drawDottedWaves() {
-            ctx.clearRect(0, 0, width, height);
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            ctx.clearRect(0, 0, w, h);
             
-            // Adjust grid resolution relative to screen size
-            const cols = Math.floor(width / 20); 
-            const rows = 18; 
-            const xSpace = width / cols;
-            const ySpace = 18;
+            const cols = Math.floor(w / 30); 
+            const rows = 15; 
+            const xSpace = w / cols;
+            const ySpace = 20;
             
             for(let ix = 0; ix <= cols; ix++) {
                 for(let iy = 0; iy < rows; iy++) {
                     const x = ix * xSpace;
-                    
-                    // Complex sine wave interaction to create 3D ripple/twisting look
-                    const z = Math.sin(ix * 0.2 + waveTime) + Math.cos(iy * 0.3 + waveTime * 0.8);
-                    
-                    // Project grid into 2D view (lower half of screen)
-                    const baseY = height * 0.55; 
-                    
-                    // Map depth (z) to Y offset 
-                    const yOffset = (iy * ySpace) + (z * 35); 
+                    const z = Math.sin(ix * 0.3 + waveTime) + Math.cos(iy * 0.4 + waveTime * 0.6);
+                    const baseY = h * 0.6; 
+                    const yOffset = (iy * ySpace) + (z * 30); 
                     const y = baseY + yOffset;
                     
-                    // Dots closer (higher iy) are larger
                     const scale = (iy / rows);
-                    const radius = scale * 2.5 + 0.5;
-                    
-                    // Closer dots are more opaque
-                    const alpha = scale * 0.7 + 0.1;
+                    const radius = scale * 2 + 0.5;
+                    const alpha = scale * 0.5 + 0.05;
 
                     ctx.beginPath();
                     ctx.arc(x, y, radius, 0, Math.PI * 2);
-                    // Match the green primary color theme dynamically
                     ctx.fillStyle = `rgba(16, 185, 129, ${alpha})`;
                     ctx.fill();
                 }
             }
             
-            waveTime += 0.03; // Animation speed
+            waveTime += 0.02; 
             requestAnimationFrame(drawDottedWaves);
         }
         drawDottedWaves();

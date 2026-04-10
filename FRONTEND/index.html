@@ -2,30 +2,48 @@
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smart Study Planner</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#10B981">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="dashboard-page">
 
     <!-- Animated Dotted Wave Background -->
-    <canvas id="bg-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; background-color: var(--bg-color);"></canvas>
+    <canvas id="bg-canvas"></canvas>
 
     <!-- Main Wrapper -->
     <div style="max-width: 1400px; margin: 0 auto; z-index: 10; position: relative;">
         
         <!-- Header -->
         <header class="top-header">
-            <div style="display:flex; align-items:center; gap:0.5rem;">
-                <span style="font-size:2rem;">📚</span>
-                <div style="display:flex; flex-direction:column; color:var(--primary); font-weight:700; font-size:1.25rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <span style="font-size:2.5rem;">📚</span>
+                <div style="display:flex; flex-direction:column; color:var(--primary); font-weight:800; font-size:1.5rem; line-height:1.2;">
                     Smart Study Planner
-                    <span style="font-size:0.7rem; color:var(--text-muted); font-weight:400;">Plan your studies smartly</span>
+                    <span style="font-size:0.8rem; color:var(--text-muted); font-weight:400; letter-spacing:0.5px;">Plan your studies smartly</span>
                 </div>
             </div>
 
-            <!-- Nav Pills -->
+            <!-- Stats (Compact on Mobile) -->
+            <div class="header-stats">
+                <div class="stat-box">
+                    <div style="font-size:0.6rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Streak</div>
+                    <div style="font-size:1.25rem; font-weight:700;" id="hdr-streak">0</div>
+                </div>
+                <div class="stat-box">
+                    <div style="font-size:0.6rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Level</div>
+                    <div style="font-size:1.25rem; font-weight:700; color:var(--warning);" id="hdr-level">1</div>
+                </div>
+                <div class="stat-box">
+                    <div style="font-size:0.6rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">XP</div>
+                    <div style="font-size:1.25rem; font-weight:700; color:var(--primary);" id="hdr-xp">0</div>
+                </div>
+            </div>
+
+            <!-- Desktop Nav Pills -->
             <nav class="nav-pills" id="main-nav">
                 <div class="nav-pill active" data-target="dashboard">Dashboard</div>
                 <div class="nav-pill" data-target="focus">Focus Timer</div>
@@ -34,21 +52,6 @@
                 <div class="nav-pill" id="theme-toggle">🌙 Theme</div>
                 <div class="nav-pill" id="btn-logout" style="background:var(--danger); color:white;">Logout</div>
             </nav>
-
-            <div style="display:flex; gap:0.5rem; text-align:center;">
-                <div style="background:rgba(0,0,0,0.5); padding:0.2rem 1rem; border-radius:8px; border:1px solid var(--border-color);">
-                    <div style="font-size:0.65rem; color:var(--text-muted);">STREAK</div>
-                    <div style="font-size:1.25rem; font-weight:700;" id="hdr-streak">0</div>
-                </div>
-                <div style="background:rgba(0,0,0,0.5); padding:0.2rem 1rem; border-radius:8px; border:1px solid var(--border-color);">
-                    <div style="font-size:0.65rem; color:var(--text-muted);">LEVEL</div>
-                    <div style="font-size:1.25rem; font-weight:700; color:var(--warning);" id="hdr-level">1</div>
-                </div>
-                <div style="background:rgba(0,0,0,0.5); padding:0.2rem 1rem; border-radius:8px; border:1px solid var(--border-color);">
-                    <div style="font-size:0.65rem; color:var(--text-muted);">XP</div>
-                    <div style="font-size:1.25rem; font-weight:700; color:var(--primary);" id="hdr-xp">0</div>
-                </div>
-            </div>
         </header>
 
         <!-- VIEW: DASHBOARD -->
@@ -56,51 +59,52 @@
             <!-- Recommendation -->
             <div class="card" style="margin-bottom: 1.5rem;">
                 <div class="card-title">🤖 Today's Smart Recommendation</div>
-                <div style="text-align:center; padding:1.5rem; background:rgba(0,0,0,0.3); border-radius:8px;" id="main-rec-content">
+                <div style="text-align:center; padding:1.5rem; background:rgba(0,0,0,0.3); border-radius:12px; font-size:1.1rem;" id="main-rec-content">
                     Loading recommendation... Add subjects to get started!
                 </div>
             </div>
 
-            <!-- Dashboard 3 Columns -->
             <div class="grid-layout">
-                <!-- Col 1 -->
+                <!-- Col 1: Add Subject -->
                 <div class="card">
                     <div class="card-title">➕ Add Subject</div>
                     <form id="form-add-subject">
                         <div class="input-group">
                             <label class="input-label">Subject Name *</label>
-                            <input type="text" id="sub-name" class="input-field" required>
+                            <input type="text" id="sub-name" class="input-field" placeholder="e.g. Mathematics" required>
                         </div>
-                        <div class="input-group">
-                            <label class="input-label">Total Chapters *</label>
-                            <input type="number" id="sub-chapters" class="input-field" value="10" required>
+                        <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap:1rem; display:grid;">
+                            <div class="input-group" style="margin-bottom:0;">
+                                <label class="input-label">Chapters *</label>
+                                <input type="number" id="sub-chapters" class="input-field" value="10" required>
+                            </div>
+                            <div class="input-group" style="margin-bottom:0;">
+                                <label class="input-label">Difficulty</label>
+                                <select id="sub-diff" class="input-field">
+                                    <option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="input-group">
-                            <label class="input-label">Difficulty *</label>
-                            <select id="sub-diff" class="input-field">
-                                <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label class="input-label">Priority *</label>
+                        <div class="input-group" style="margin-top:1rem;">
+                            <label class="input-label">Priority</label>
                             <select id="sub-prio" class="input-field">
                                 <option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary">Save Subject</button>
+                        <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">Save Subject</button>
                     </form>
                 </div>
 
-                <!-- Col 2 -->
+                <!-- Col 2: Subjects List -->
                 <div class="card">
                     <div class="card-title">📚 My Subjects</div>
-                    <div id="subjects-list" style="flex:1; overflow-y:auto; max-height:400px;"></div>
+                    <div id="subjects-list" style="flex:1; overflow-y:auto; max-height:400px; padding-right:5px;"></div>
                 </div>
 
-                <!-- Col 3 -->
+                <!-- Col 3: Plan & Timer shortcut -->
                 <div class="card">
                     <div class="card-title">📅 Suggested Plan</div>
-                    <button class="btn btn-primary" id="btn-dashboard-pomo" style="margin-bottom:1rem;">⏱️ Open Pomodoro</button>
+                    <button class="btn btn-primary" id="btn-dashboard-pomo" style="margin-bottom:1rem; background:var(--surface-alt); color:white; border:1px solid var(--border-color);">⏱️ Open Pomodoro</button>
                     <div id="daily-plan-list"></div>
                 </div>
             </div>
@@ -129,9 +133,9 @@
                         <option value="">No Subject Associated</option>
                     </select>
                 </div>
-                <div style="display:flex; gap:1rem; justify-content:center; margin-top:2rem;">
-                    <button class="btn btn-primary" id="btn-timer-start" style="width:120px;">Start</button>
-                    <button class="btn" id="btn-timer-reset" style="background:#4B5563; color:white; width:120px;">Reset</button>
+                <div style="display:flex; gap:1.5rem; justify-content:center; margin-top:2rem;">
+                    <button class="btn btn-primary" id="btn-timer-start" style="width:140px;">Start</button>
+                    <button class="btn" id="btn-timer-reset" style="background:#4B5563; color:white; width:140px;">Reset</button>
                 </div>
             </div>
         </div>
@@ -140,7 +144,7 @@
         <div id="view-analytics" class="view-section">
             <div class="card">
                 <div class="card-title">📊 Your Analytics Overview</div>
-                <div style="height: 400px; width: 100%; display:flex; align-items:center; justify-content:center;">
+                <div style="height: 400px; width: 100%;">
                     <canvas id="progressChart"></canvas>
                 </div>
             </div>
@@ -148,30 +152,53 @@
 
         <!-- VIEW: CHAT -->
         <div id="view-chat" class="view-section">
-            <div class="card" style="height:600px;">
+            <div class="card" style="height: calc(100vh - 250px); min-height: 400px;">
                 <div class="card-title">💬 AI Study Assistant</div>
-                <div id="chat-history" style="flex:1; background:rgba(0,0,0,0.5); border-radius:8px; padding:1rem; overflow-y:auto; margin-bottom:1rem; display:flex; flex-direction:column; gap:0.5rem;">
-                    <div style="background:var(--surface-alt); padding:0.8rem; border-radius:8px; max-width:80%;">
+                <div id="chat-history" style="flex:1; background:rgba(0,0,0,0.5); border-radius:12px; padding:1.25rem; overflow-y:auto; margin-bottom:1rem; display:flex; flex-direction:column; gap:0.75rem;">
+                    <div style="background:var(--surface-alt); padding:1rem; border-radius:12px; max-width:85%; line-height:1.4;">
                         Hi! Ask me to 'start timer', 'recommend subject', or 'generate plan'!
                     </div>
                 </div>
-                <form id="chat-form" style="display:flex; gap:1rem;">
+                <form id="chat-form" style="display:flex; gap:0.75rem;">
                     <input type="text" id="chat-input" class="input-field" placeholder="Message assistant..." style="flex:1;" required>
-                    <button type="submit" class="btn btn-primary" style="width:100px;">Send</button>
+                    <button type="submit" class="btn btn-primary" style="width:90px;">Send</button>
                 </form>
             </div>
         </div>
 
     </div>
 
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" data-target="dashboard">
+            <span>🏠</span>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" data-target="focus">
+            <span>⏱️</span>
+            <span>Focus</span>
+        </div>
+        <div class="nav-item" data-target="analytics">
+            <span>📊</span>
+            <span>Stats</span>
+        </div>
+        <div class="nav-item" data-target="chat">
+            <span>💬</span>
+            <span>AI Chat</span>
+        </div>
+        <div class="nav-item" id="btn-logout-mobile">
+            <span>🚪</span>
+            <span>Exit</span>
+        </div>
+    </nav>
+
     <!-- Music Widget -->
     <div class="music-widget">
         <div class="music-header">
             <span>🎵 Focus Music</span>
-            <span id="min-music" style="cursor:pointer; padding:0 0.5rem;">_</span>
+            <span id="min-music" style="cursor:pointer; padding:0 0.5rem; font-size:1.2rem;">_</span>
         </div>
         <div class="music-list" id="music-list">
-            <!-- Buttons have YouTube video IDs in data attribute -->
             <button class="music-btn" data-yt="jfKfPfyJRdk">🌙 Lo-Fi Hip Hop</button>
             <button class="music-btn" data-yt="j-OaFIBW978">🎻 Classical Focus</button>
             <button class="music-btn" data-yt="bn9F19Hi1Lk">🌊 Ambient Sounds</button>
@@ -179,13 +206,21 @@
             <button class="music-btn" id="stop-music" style="background:var(--danger); color:white;">⏹️ Stop Music</button>
         </div>
     </div>
+    
     <div id="yt-container" style="display:none; position:fixed; bottom:0; left:0;"><div id="yt-player"></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="api-client.js"></script>
     <script src="script.js"></script>
-    
-    <!-- YouTube API -->
     <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('SW Registered'))
+                    .catch(err => console.log('SW Registration Failed', err));
+            });
+        }
+    </script>
 </body>
 </html>

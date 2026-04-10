@@ -1,13 +1,15 @@
 const CACHE_NAME = 'study-planner-v2';
 const ASSETS = [
-    '/',
-    '/index.html',
-    '/login.html',
-    '/styles.css',
-    '/script.js',
-    '/login.js',
-    '/api-client.js',
-    '/manifest.json'
+    './',
+    './index.html',
+    './login.html',
+    './styles.css',
+    './script.js',
+    './login.js',
+    './api-client.js',
+    './manifest.json',
+    './icon-192.png',
+    './icon-512.png'
 ];
 
 self.addEventListener('install', (e) => {
