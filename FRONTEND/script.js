@@ -216,15 +216,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function playYouTubeMusic(videoId, btn) {
         try {
-            // Requirement: Clear iframe src first
-            ytPlayer.src = '';
+            // Removing delay to ensure browser recognizes User Gesture for autoplay with sound
+            // We set about:blank first to force an iframe reload if the same track is clicked
+            ytPlayer.src = 'about:blank';
             
-            // Requirement: Set new src after 100ms delay to force reload
-            setTimeout(() => {
-                ytPlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-                updateTrackUI(btn, true);
-                console.log(`[Music] Successfully requested: ${videoId}`);
-            }, 100);
+            // Added mute=0 and enablejsapi=1 for better compatibility
+            ytPlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&rel=0&enablejsapi=1`;
+            
+            updateTrackUI(btn, true);
+            console.log(`[Music] Successfully requested: ${videoId}`);
         } catch (err) {
             console.error("[Music] playYouTubeMusic error:", err);
             trackLabel.textContent = "Error: Check Console";
