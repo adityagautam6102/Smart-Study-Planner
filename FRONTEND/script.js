@@ -192,73 +192,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // -- 6. Music Widget (Official API Implementation) --
+    // -- 6. Music Widget (Direct Link Implementation) --
     document.getElementById('min-music').addEventListener('click', (e) => {
         const l = document.getElementById('music-list');
         l.classList.toggle('hidden');
         e.target.textContent = l.classList.contains('hidden') ? '□' : '_';
     });
 
-    let player;
-    // Attach to window so YouTube API can find it
-    window.onYouTubeIframeAPIReady = () => {
-        player = new YT.Player('ytPlayer', {
-            events: {
-                'onReady': () => console.log('[Music] API Player Ready'),
-                'onError': (e) => console.error('[Music] API error:', e.data)
-            }
-        });
-    };
-
     const trackLabel = document.getElementById('current-track');
 
-    function updateTrackUI(btn, isPlaying) {
+    function updateTrackUI(btn) {
         document.querySelectorAll('.music-btn').forEach(b => b.classList.remove('active-track'));
-        if (isPlaying && btn) {
+        if (btn) {
             btn.classList.add('active-track');
             const title = btn.textContent.replace(/[^\x00-\x7F]/g, "").trim();
-            trackLabel.textContent = `Playing: ${title || btn.textContent}`;
-        } else {
-            trackLabel.textContent = 'Stopped';
-        }
-    }
-
-    function playYouTubeMusic(videoId, btn) {
-        if (!player || typeof player.loadVideoById !== 'function') {
-            console.error("[Music] Player not ready yet");
-            trackLabel.textContent = "Loading Player...";
-            return;
-        }
-
-        try {
-            // First unmute and play (vital for browser gesture recognition)
-            player.unMute();
-            player.setVolume(100);
-            
-            // Load the new track
-            player.loadVideoById({
-                videoId: videoId,
-                suggestedQuality: 'small'
-            });
-            
-            player.playVideo();
-            updateTrackUI(btn, true);
-        } catch (err) {
-            console.error("[Music] playYouTubeMusic error:", err);
-            trackLabel.textContent = "Error: Check Console";
+            trackLabel.textContent = `Opened: ${title || btn.textContent}`;
         }
     }
 
     document.querySelectorAll('.music-btn[data-yt]').forEach(btn => {
         btn.addEventListener('click', () => {
             const videoId = btn.getAttribute('data-yt');
-            playYouTubeMusic(videoId, btn);
+            updateTrackUI(btn);
+            // Open YouTube in a new tab for guaranteed playback
+            window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
         });
-    });
-
-    document.getElementById('stop-music').addEventListener('click', () => {
-        if (player && player.stopVideo) player.stopVideo();
-        updateTrackUI(null, false);
     });
 
     // -- 7. Animated Dotted Waves Background (Canvas) --
