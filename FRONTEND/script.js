@@ -199,22 +199,60 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.target.textContent = l.classList.contains('hidden') ? '□' : '_';
     });
 
-    let player;
-    window.onYouTubeIframeAPIReady = function() {
-        player = new YT.Player('yt-player', { height: '0', width: '0', videoId: '', playerVars: { 'autoplay': 1, 'controls': 0 } });
-    }
-    
-    document.querySelectorAll('.music-btn[data-yt]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.music-btn').forEach(b=>b.classList.remove('active-track'));
+    // -- 6. Music Widget (Local Audio Implementation) --
+    const audioPlayer = new Audio();
+    audioPlayer.loop = true; // Loop focus music
+    const trackLabel = document.getElementById('current-track');
+
+    function updateTrackUI(btn, isPlaying) {
+        document.querySelectorAll('.music-btn').forEach(b => b.classList.remove('active-track'));
+        if (isPlaying && btn) {
             btn.classList.add('active-track');
-            if(player && player.loadVideoById) player.loadVideoById(btn.getAttribute('data-yt'));
+            // Extract text without emoji for the label
+            const title = btn.textContent.replace(/[^\x00-\x7F]/g, "").trim();
+            trackLabel.textContent = `Playing: ${title || btn.textContent}`;
+        } else if (!audioPlayer.paused) {
+            // Still playing some track (shouldn't happen with current logic but for safety)
+        } else {
+            trackLabel.textContent = audioPlayer.currentTime > 0 ? 'Paused' : 'Stopped';
+        }
+    }
+
+    document.querySelectorAll('.music-btn[data-file]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const file = btn.getAttribute('data-file');
+            const isSameTrack = audioPlayer.src.endsWith(file);
+
+            if (isSameTrack && !audioPlayer.paused) {
+                audioPlayer.pause();
+                updateTrackUI(btn, false);
+            } else {
+                if (!isSameTrack) {
+                    audioPlayer.src = file;
+                    audioPlayer.load();
+                }
+                audioPlayer.play().then(() => {
+                    updateTrackUI(btn, true);
+                }).catch(err => {
+                    console.error("Audio play error:", err);
+                    trackLabel.textContent = "Error: File not found";
+                    btn.classList.remove('active-track');
+                });
+            }
         });
     });
+
     document.getElementById('stop-music').addEventListener('click', () => {
-         document.querySelectorAll('.music-btn').forEach(b=>b.classList.remove('active-track'));
-         if(player && player.stopVideo) player.stopVideo();
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        document.querySelectorAll('.music-btn').forEach(b => b.classList.remove('active-track'));
+        trackLabel.textContent = 'Stopped';
     });
+
+    audioPlayer.onerror = () => {
+        console.error("Audio error occurred");
+        trackLabel.textContent = "Audio Load Error";
+    };
 
     // -- 7. Animated Dotted Waves Background (Canvas) --
     const canvas = document.getElementById('bg-canvas');

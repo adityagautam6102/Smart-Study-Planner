@@ -243,7 +243,26 @@ a { color: var(--primary); text-decoration: none; }
 .music-list.hidden { height: 0; padding: 0; opacity: 0; pointer-events: none;}
 .music-btn { background-color: var(--surface-alt); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.6rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem;}
 .music-btn:hover { background-color: var(--primary); color: #000;}
-.music-btn.active-track { background-color: var(--primary); color: #000; font-weight: 600;}
+.music-btn.active-track { 
+  background-color: var(--primary); 
+  color: #000; 
+  font-weight: 600;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+  animation: pulse-active 2s infinite;
+}
+
+@keyframes pulse-active {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); opacity: 0.9; }
+  100% { transform: scale(1); }
+}
+
+#current-track {
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .timer-display { font-size: 5rem; font-weight: 800; text-align: center; margin: 1.5rem 0; color: var(--primary); font-variant-numeric: tabular-nums; text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);}
 
