@@ -199,60 +199,89 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.target.textContent = l.classList.contains('hidden') ? '□' : '_';
     });
 
-    // -- 6. Music Widget (Local Audio Implementation) --
-    const audioPlayer = new Audio();
-    audioPlayer.loop = true; // Loop focus music
+    // -- 6. Music Widget (YouTube Iframe API Implementation) --
+    let player;
+    window.onYouTubeIframeAPIReady = function() {
+        player = new YT.Player('yt-player', {
+            height: '0',
+            width: '0',
+            videoId: '',
+            playerVars: {
+                'autoplay': 1,
+                'controls': 0,
+                'disablekb': 1,
+                'fs': 0,
+                'rel': 0,
+                'modestbranding': 1
+            },
+            events: {
+                'onReady': () => console.log("[Music] YT Player Ready"),
+                'onStateChange': onPlayerStateChange,
+                'onError': (e) => {
+                    console.error("[Music] YT Error:", e.data);
+                    trackLabel.textContent = "Error: Video restricted";
+                }
+            }
+        });
+    };
+
     const trackLabel = document.getElementById('current-track');
+
+    function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.ENDED) {
+            document.querySelectorAll('.music-btn').forEach(b => b.classList.remove('active-track'));
+            trackLabel.textContent = 'Stopped';
+        }
+        if (event.data === YT.PlayerState.PLAYING) {
+            console.log("[Music] Playing...");
+        }
+        if (event.data === YT.PlayerState.PAUSED) {
+            console.log("[Music] Paused.");
+        }
+    }
 
     function updateTrackUI(btn, isPlaying) {
         document.querySelectorAll('.music-btn').forEach(b => b.classList.remove('active-track'));
         if (isPlaying && btn) {
             btn.classList.add('active-track');
-            // Extract text without emoji for the label
             const title = btn.textContent.replace(/[^\x00-\x7F]/g, "").trim();
             trackLabel.textContent = `Playing: ${title || btn.textContent}`;
-        } else if (!audioPlayer.paused) {
-            // Still playing some track (shouldn't happen with current logic but for safety)
         } else {
-            trackLabel.textContent = audioPlayer.currentTime > 0 ? 'Paused' : 'Stopped';
+            trackLabel.textContent = 'Paused';
         }
     }
 
-    document.querySelectorAll('.music-btn[data-file]').forEach(btn => {
+    document.querySelectorAll('.music-btn[data-yt]').forEach(btn => {
         btn.addEventListener('click', () => {
-            const file = btn.getAttribute('data-file');
-            const isSameTrack = audioPlayer.src.endsWith(file);
+            const videoId = btn.getAttribute('data-yt');
+            if (!player || !player.loadVideoById) {
+                console.warn("[Music] Player not ready yet.");
+                return;
+            }
 
-            if (isSameTrack && !audioPlayer.paused) {
-                audioPlayer.pause();
+            // Detect if current video is the same
+            const currentVideoId = player.getVideoData ? player.getVideoData().video_id : null;
+            const isSameTrack = currentVideoId === videoId;
+            const state = player.getPlayerState();
+
+            if (isSameTrack && state === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
                 updateTrackUI(btn, false);
+            } else if (isSameTrack && state === YT.PlayerState.PAUSED) {
+                player.playVideo();
+                updateTrackUI(btn, true);
             } else {
-                if (!isSameTrack) {
-                    audioPlayer.src = file;
-                    audioPlayer.load();
-                }
-                audioPlayer.play().then(() => {
-                    updateTrackUI(btn, true);
-                }).catch(err => {
-                    console.error("Audio play error:", err);
-                    trackLabel.textContent = "Error: File not found";
-                    btn.classList.remove('active-track');
-                });
+                player.loadVideoById(videoId);
+                updateTrackUI(btn, true);
             }
         });
     });
 
     document.getElementById('stop-music').addEventListener('click', () => {
-        audioPlayer.pause();
-        audioPlayer.currentTime = 0;
+        if (player && player.stopVideo) player.stopVideo();
         document.querySelectorAll('.music-btn').forEach(b => b.classList.remove('active-track'));
         trackLabel.textContent = 'Stopped';
     });
-
-    audioPlayer.onerror = () => {
-        console.error("Audio error occurred");
-        trackLabel.textContent = "Audio Load Error";
-    };
 
     // -- 7. Animated Dotted Waves Background (Canvas) --
     const canvas = document.getElementById('bg-canvas');
