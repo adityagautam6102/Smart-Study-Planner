@@ -199,46 +199,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.target.textContent = l.classList.contains('hidden') ? '□' : '_';
     });
 
-    // -- 6. Music Widget (YouTube Iframe API Implementation) --
-    let player;
-    window.onYouTubeIframeAPIReady = function() {
-        player = new YT.Player('yt-player', {
-            height: '0',
-            width: '0',
-            videoId: '',
-            playerVars: {
-                'autoplay': 1,
-                'controls': 0,
-                'disablekb': 1,
-                'fs': 0,
-                'rel': 0,
-                'modestbranding': 1
-            },
-            events: {
-                'onReady': () => console.log("[Music] YT Player Ready"),
-                'onStateChange': onPlayerStateChange,
-                'onError': (e) => {
-                    console.error("[Music] YT Error:", e.data);
-                    trackLabel.textContent = "Error: Video restricted";
-                }
-            }
-        });
-    };
-
+    // -- 6. Music Widget (Reliable Iframe Implementation) --
+    const ytPlayer = document.getElementById('ytPlayer');
     const trackLabel = document.getElementById('current-track');
-
-    function onPlayerStateChange(event) {
-        if (event.data === YT.PlayerState.ENDED) {
-            document.querySelectorAll('.music-btn').forEach(b => b.classList.remove('active-track'));
-            trackLabel.textContent = 'Stopped';
-        }
-        if (event.data === YT.PlayerState.PLAYING) {
-            console.log("[Music] Playing...");
-        }
-        if (event.data === YT.PlayerState.PAUSED) {
-            console.log("[Music] Paused.");
-        }
-    }
 
     function updateTrackUI(btn, isPlaying) {
         document.querySelectorAll('.music-btn').forEach(b => b.classList.remove('active-track'));
@@ -247,40 +210,37 @@ document.addEventListener('DOMContentLoaded', async () => {
             const title = btn.textContent.replace(/[^\x00-\x7F]/g, "").trim();
             trackLabel.textContent = `Playing: ${title || btn.textContent}`;
         } else {
-            trackLabel.textContent = 'Paused';
+            trackLabel.textContent = 'Stopped';
+        }
+    }
+
+    function playYouTubeMusic(videoId, btn) {
+        try {
+            // Requirement: Clear iframe src first
+            ytPlayer.src = '';
+            
+            // Requirement: Set new src after 100ms delay to force reload
+            setTimeout(() => {
+                ytPlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+                updateTrackUI(btn, true);
+                console.log(`[Music] Successfully requested: ${videoId}`);
+            }, 100);
+        } catch (err) {
+            console.error("[Music] playYouTubeMusic error:", err);
+            trackLabel.textContent = "Error: Check Console";
         }
     }
 
     document.querySelectorAll('.music-btn[data-yt]').forEach(btn => {
         btn.addEventListener('click', () => {
             const videoId = btn.getAttribute('data-yt');
-            if (!player || !player.loadVideoById) {
-                console.warn("[Music] Player not ready yet.");
-                return;
-            }
-
-            // Detect if current video is the same
-            const currentVideoId = player.getVideoData ? player.getVideoData().video_id : null;
-            const isSameTrack = currentVideoId === videoId;
-            const state = player.getPlayerState();
-
-            if (isSameTrack && state === YT.PlayerState.PLAYING) {
-                player.pauseVideo();
-                updateTrackUI(btn, false);
-            } else if (isSameTrack && state === YT.PlayerState.PAUSED) {
-                player.playVideo();
-                updateTrackUI(btn, true);
-            } else {
-                player.loadVideoById(videoId);
-                updateTrackUI(btn, true);
-            }
+            playYouTubeMusic(videoId, btn);
         });
     });
 
     document.getElementById('stop-music').addEventListener('click', () => {
-        if (player && player.stopVideo) player.stopVideo();
-        document.querySelectorAll('.music-btn').forEach(b => b.classList.remove('active-track'));
-        trackLabel.textContent = 'Stopped';
+        ytPlayer.src = '';
+        updateTrackUI(null, false);
     });
 
     // -- 7. Animated Dotted Waves Background (Canvas) --

@@ -203,16 +203,14 @@
         </div>
         <div class="music-list" id="music-list">
             <button class="music-btn" data-yt="jfKfPfyJRdk">🌙 Lo-Fi Hip Hop</button>
-            <button class="music-btn" data-yt="dfnCAwd5M64">🎻 Classical Focus</button>
-            <button class="music-btn" data-yt="nx3nB-Xn7Z8">🌊 Ambient Sounds</button>
-            <button class="music-btn" data-yt="HSooz168Hec">🎹 Piano Study</button>
+            <button class="music-btn" data-yt="5qap5aO4i9A">🎻 Classical Focus</button>
+            <button class="music-btn" data-yt="DWcJFNfaw9c">🌊 Ambient Sounds</button>
+            <button class="music-btn" data-yt="NMTezuSka40">🎹 Piano Study</button>
             <button class="music-btn" id="stop-music" style="background:var(--danger); color:white;">⏹️ Stop Music</button>
         </div>
     </div>
     
-    <div id="yt-player" style="display:none; position:fixed; bottom:0; left:0;"></div>
-    
-    <script src="https://www.youtube.com/iframe_api"></script>
+    <iframe id="ytPlayer" style="width: 1px; height: 1px; position: fixed; bottom: -10px; left: -10px; opacity: 0.01; pointer-events: none; border: 0;"></iframe>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="api-client.js"></script>
     <script src="script.js"></script>
